@@ -80,8 +80,7 @@ def check_list(var):
 	result: bool
 		True if var is a list or numpy array, False otherwise
 	"""
-	result = (type(var) == list) or (type(var) == np.ndarray)
-	return result
+	return type(var) in [list, np.ndarray]
 
 def check_dict(var):
 	"""
@@ -98,8 +97,7 @@ def check_dict(var):
 		True if var is a dict, False otherwise
 
 	"""	
-	result = type(var) == dict
-	return result
+	return type(var) == dict
 
 def check_str(var):
 	"""
@@ -116,8 +114,7 @@ def check_str(var):
 		True if var is a string, False otherwise
 
 	"""	
-	result = type(var) == str
-	return result
+	return type(var) == str
 
 def check_float(var):
 	"""
@@ -134,8 +131,7 @@ def check_float(var):
 		True if var is a float, False otherwise
 
 	"""		
-	result = type(var) == float
-	return result
+	return type(var) == float
 
 def check_int(var):
 	"""
@@ -152,8 +148,7 @@ def check_int(var):
 		True if var is an int, False otherwise
 
 	"""	
-	result = type(var) == int
-	return result
+	return type(var) == int
 
 def check_scalar(var):
 	"""
@@ -202,11 +197,9 @@ def check_savedir(folder):
 			path = os.path.realpath(folder)
 		except FileNotFoundError:
 			_log.warning('Unable to save to ' + folder + '. Saving data to the current directory')
-			if os.path.exists('processed'):
-				path = os.path.realpath('processed')
-			else:
+			if not os.path.exists('processed'):
 				os.mkdir('processed')
-				path = os.path.realpath('processed')
+			path = os.path.realpath('processed')
 	return path
 
 def check_labels(data):
@@ -317,8 +310,7 @@ def read_file(filename, dlm=dlm_default):
 
 def get_testdir():
 	fcdir = os.path.dirname(os.path.realpath(__file__))
-	datapath = os.path.join(fcdir, 'testdata')
-	return datapath
+	return os.path.join(fcdir, 'testdata')
 
 def save_data(data, filename=None, folder=None):
 	"""
@@ -342,10 +334,7 @@ def save_data(data, filename=None, folder=None):
 		name = name + '.' + filetype
 	else:
 		name = np.random.choice(default_names) + str(np.random.randint(100))
-		if folder:
-			path = folder
-		else:
-			path = 'processed'
+		path = folder if folder else 'processed'
 		filetype = default_savetype
 		_log.warning('Filename unspecified. Saving data as ' + name + '.' + filetype)
 	if path:
@@ -353,15 +342,13 @@ def save_data(data, filename=None, folder=None):
 	elif folder:
 		savedir = check_savedir(folder)
 	else:
-		if os.path.exists('processed'):
-			savedir = os.path.realpath('processed')
-		else:
+		if not os.path.exists('processed'):
 			os.mkdir('processed')
-			savedir = os.path.realpath('processed')
+		savedir = os.path.realpath('processed')
 	full_path = os.path.join(savedir, name)
 	if os.path.exists(full_path):
 		while os.path.exists(full_path):
-			name = name.replace('.', str(np.random.randint(1000))+'.')
+			name = name.replace('.', f'{str(np.random.randint(1000))}.')
 			full_path = os.path.join(savedir, name)
 		_log.warning('Saving data as ' + name + ' to avoid overwriting existing file')
 	if filetype in excel_types:

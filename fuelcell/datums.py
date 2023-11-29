@@ -49,10 +49,7 @@ def load_data(filename=None, folder=None, pattern='', expt_type='', filetype='',
 			filename = [filename]
 		# for f in filename:
 		# 	data.append(utils.read_file(f, delimiter))
-	if folder:
-		dirpath = os.path.realpath(folder)
-	else:
-		dirpath = os.getcwd()
+	dirpath = os.path.realpath(folder) if folder else os.getcwd()
 	if expt_type and not pattern:
 		pattern = r'.*' + expt_type + r'.*'
 	files = utils.get_files(dirpath, pattern, filetype, filename)
@@ -95,8 +92,7 @@ def ca_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_de
 	data:list of Datum
 		Returns a list of Datum objects, with each entry corresponding to an individual data file
 	"""
-	data = load_data(filename, folder, pattern, 'ca', filetype, delimiter)
-	return data
+	return load_data(filename, folder, pattern, 'ca', filetype, delimiter)
 
 def cp_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_default):
 	"""
@@ -122,8 +118,7 @@ def cp_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_de
 	data:list of Datum
 		Returns a list of Datum objects, with each entry corresponding to an individual data file
 	"""
-	data = load_data(filename, folder, pattern, 'cp', filetype, delimiter)
-	return data
+	return load_data(filename, folder, pattern, 'cp', filetype, delimiter)
 
 def cv_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_default):
 	"""
@@ -149,8 +144,7 @@ def cv_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_de
 	data:list of Datum
 		Returns a list of Datum objects, with each entry corresponding to an individual data file
 	"""
-	data = load_data(filename, folder, pattern, 'cv', filetype, delimiter)
-	return data
+	return load_data(filename, folder, pattern, 'cv', filetype, delimiter)
 
 def lsv_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_default):
 	"""
@@ -176,8 +170,7 @@ def lsv_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_d
 	data:list of Datum
 		Returns a list of Datum objects, with each entry corresponding to an individual data file
 	"""
-	data = load_data(filename, folder, pattern, 'lsv', filetype, delimiter)
-	return data
+	return load_data(filename, folder, pattern, 'lsv', filetype, delimiter)
 
 def eis_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_default):
 	"""
@@ -203,8 +196,7 @@ def eis_raw(filename=None, folder=None, pattern='', filetype='', delimiter=dlm_d
 	data:list of Datum
 		Returns a list of Datum objects, with each entry corresponding to an individual data file
 	"""
-	data = load_data(filename, folder, pattern, 'eis', filetype, delimiter)
-	return data
+	return load_data(filename, folder, pattern, 'eis', filetype, delimiter)
 
 ### high-level functions for processing data ###
 def ca_process(data=None, current_column=2, potential_column=1, area=5, reference='she', thermo_potential=0, export_data=False, save_dir='processed', threshold=5, min_step_length=50, pts_to_average=300, pyramid=False, **kwargs):
@@ -424,9 +416,8 @@ def eis_process(data=None, freq_column=10, real_column=0, imag_column=1, area=5,
 			# freq_splits = split_and_filter(freq_all, split_pts, min_length=min_step_length)
 			real_splits, imag_splits = split_at_zeros(real_all, imag_all)
 			real_splits, imag_splits = drop_neg(real_splits, imag_splits)
-			i = 0
 			# for f, re, im, curr in zip(freq_splits, real_splits, imag_splits, current_splits):
-			for re, im in zip(real_splits, imag_splits):
+			for i, (re, im) in enumerate(zip(real_splits, imag_splits)):
 				re, im = np.asarray(re), np.asarray(im)
 				# f = np.asarray(f)
 				this_re = re[(im > 0) & (re > 0)]
@@ -459,7 +450,6 @@ def eis_process(data=None, freq_column=10, real_column=0, imag_column=1, area=5,
 				if export_data:
 					name = this_data.get_name()
 					utils.save_data(df, name+'.csv', save_dir)
-				i += 1
 	return new_data
 
 ### cp/ca analysis ###
@@ -576,8 +566,7 @@ def tafel_slope(log_curr, eta, min_curr=None, max_curr=None):
 	return a, exchg_curr, rsquare, log_curr_trim, eta_trim
 
 def tafel_eqn(log_curr, exchg_curr, slope):
-	eta = slope * (log_curr - np.log10(exchg_curr))
-	return eta
+	return slope * (log_curr - np.log10(exchg_curr))
 
 ### hfr analysis ###
 def fit_eis_semicircle(real, imag):
@@ -613,13 +602,7 @@ def fit_eis_linear(real, imag):
 
 def semicircle(x, r, h, k):
 	x = np.asarray(x)
-	# discrim = r**2 - (x-h)**2
-	# if discrim >= 0:
-	# 	y = np.sqrt(discrim)
-	# else:
-	# 	y = 0
-	y = np.sqrt((r**2 - (x-h)**2)) + k
-	return y
+	return np.sqrt((r**2 - (x-h)**2)) + k
 
 ### misc auxilliary functions ###
 def electrode_correct(arr, ref='she'):
@@ -697,10 +680,7 @@ def find_col(data, col_type, label=None):
 	if default_label in newdf.columns:
 		col = newdf[default_label]
 	elif label:
-		if utils.check_str(label):
-			col = newdf[label]
-		else:
-			col = newdf.iloc[:,label]
+		col = newdf[label] if utils.check_str(label) else newdf.iloc[:,label]
 	else:
 		col = newdf.iloc[:, default_id]
 	col = np.asarray(col)
@@ -743,7 +723,7 @@ def drop_neg(xvals, yvals):
 	for x, y in zip(xvals, yvals):
 		this_x = [i for i,j in zip(x,y) if i>=0 and j>=0]
 		this_y = [j for i,j in zip(x,y) if i>=0 and j>=0]
-		if len(this_x) != 0:
+		if this_x:
 			final_x.append(this_x)
 			final_y.append(this_y)
 	return final_x, final_y
@@ -766,8 +746,7 @@ def array_apply(arr, func, **kwargs):
 	result: numpy array
 		Array of the transformed values
 	"""
-	result =  np.asarray([func(a, **kwargs) for a in arr])
-	return result
+	return np.asarray([func(a, **kwargs) for a in arr])
 
 def avg_last_pts(arr, numpts=300):
 	"""
@@ -789,8 +768,7 @@ def avg_last_pts(arr, numpts=300):
 	"""
 	if type(arr) == list:
 		arr = np.asarray(arr)
-	avg = np.mean(arr[-numpts:])
-	return avg
+	return np.mean(arr[-numpts:])
 
 def std_last_pts(arr, numpts=300):
 	"""
@@ -812,8 +790,7 @@ def std_last_pts(arr, numpts=300):
 	"""
 	if type(arr) == list:
 		arr = np.asarray(arr)
-	sd = np.std(arr[-numpts:], ddof=1)
-	return sd
+	return np.std(arr[-numpts:], ddof=1)
 
 def std_agg(arr):
 	"""
@@ -833,8 +810,7 @@ def std_agg(arr):
 	"""
 	if type(arr) == list:
 		arr = np.asarray(arr)
-	sd = np.sqrt(np.sum(arr**2))
-	return sd
+	return np.sqrt(np.sum(arr**2))
 
 def split_and_filter(arr, split_pts, min_length=0):
 	"""
@@ -883,8 +859,7 @@ def find_steps(arr, threshold=5):
 	if type(arr) == list:
 		arr = np.asarray(arr)
 	diffs = np.abs(np.diff(arr))
-	splits = np.where(diffs > threshold)[0] + 1
-	return splits 
+	return np.where(diffs > threshold)[0] + 1 
 
 
 

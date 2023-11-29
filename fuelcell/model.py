@@ -50,17 +50,13 @@ class Datum():
 		return self.name
 
 	def get_raw_data(self):
-		if self.raw_data is not None:
-			return self.raw_data.copy()
-		return None
+		return self.raw_data.copy() if self.raw_data is not None else None
 	
 	def get_label(self):
 		return self.label
 
 	def get_processed_data(self):
-		if self.processed_data is not None:
-			return self.processed_data.copy()
-		return None
+		return self.processed_data.copy() if self.processed_data is not None else None
 
 	def get_expt_type(self):
 		return self.expt_type
