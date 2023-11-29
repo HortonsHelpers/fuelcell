@@ -253,7 +253,7 @@ class VisualHandler():
 		self.plot_data = new_data
 		if new_code == 2:
 			self.tafel_data = new_data
-		if new_code == 3:
+		elif new_code == 3:
 			self.eis_data = new_data
 
 	def set_xcol(self, new_col):
@@ -638,7 +638,7 @@ class FuelcellUI(QTabWidget):
 
 	def param_layout_data(self):
 		# mea area widgets
-		self.area_lbl = QLabel(f'MEA area [cm<sup>2</sup>]')
+		self.area_lbl = QLabel('MEA area [cm<sup>2</sup>]')
 		self.area_txtbx = QLineEdit('5')
 		# reference electrode widgets
 		self.refelec_lbl = QLabel('Reference electrode')
@@ -720,8 +720,9 @@ class FuelcellUI(QTabWidget):
 	### data processing actions ###
 	def choose_folder_data(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_data.setText(filepath)
 			self.file_txtbx_data.setText('')
 
@@ -740,7 +741,7 @@ class FuelcellUI(QTabWidget):
 			self.datahandler.set_folder(folder)
 			self.file_action_data()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_data(self):
 		file_str = self.file_txtbx_data.text()
@@ -754,13 +755,13 @@ class FuelcellUI(QTabWidget):
 			files = [os.path.join(folder, f) for f in files]
 			self.datahandler.set_files(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def protocol_action(self):
 		new_protocol = self.protocol_menu.currentText()
 		protocol_code = FuelcellUI.expt_types[new_protocol]
 		self.datahandler.expt_type = protocol_code
-		if protocol_code == 'cv' or protocol_code == 'lsv':
+		if protocol_code in ['cv', 'lsv']:
 			self.colone_lbl.setText('Potential column')
 			self.colone_txtbx.setText('0')
 			self.coltwo_lbl.setText('Current column')
@@ -770,7 +771,7 @@ class FuelcellUI(QTabWidget):
 			self.rxn_menu.setEnabled(True)
 			self.pyr_chkbx.setEnabled(False)
 			self.ststpts_txtbx.setEnabled(False)
-		elif protocol_code == 'ca' or protocol_code == 'cp':
+		elif protocol_code in ['ca', 'cp']:
 			self.colone_lbl.setText('Potential column')
 			self.colone_txtbx.setText('1')
 			self.coltwo_lbl.setText('Current column')
@@ -892,7 +893,7 @@ class FuelcellUI(QTabWidget):
 			if data:
 				self.datatable_selector.setEnabled(True)
 				self.data_dict = {d.get_name():d.get_processed_data() for d in data if d.get_processed_data() is not None}
-				for name in self.data_dict.keys():
+				for name in self.data_dict:
 					self.datatable_selector.addItem(name)
 				self.datatable_selector.setCurrentText(list(self.data_dict.keys())[0])
 				self.update_table(list(self.data_dict.values())[0])
@@ -905,7 +906,7 @@ class FuelcellUI(QTabWidget):
 		except AttributeError as e:
 			self.update_status('All selected files must match the selected experiment type')
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def datatable_selector_action(self):
 		try:
@@ -913,7 +914,7 @@ class FuelcellUI(QTabWidget):
 			data = self.data_dict[name]
 			self.update_table(data)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def update_table(self, data):
 		self.datamodel = TableModel(data)
@@ -1286,8 +1287,9 @@ class FuelcellUI(QTabWidget):
 
 	def choose_folder_vis(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_vis.setText(filepath)
 			self.file_txtbx_vis.setText('')			
 
@@ -1306,7 +1308,7 @@ class FuelcellUI(QTabWidget):
 			self.vishandler.set_datafolder(folder)
 			self.file_action_vis()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_vis(self):
 		file_str = self.file_txtbx_vis.text()
@@ -1320,14 +1322,14 @@ class FuelcellUI(QTabWidget):
 			files = [os.path.join(folder, f) for f in files]
 			self.vishandler.set_datafiles(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def loaddata_action_vis(self):
 		try:
 			self.vishandler.load_data()
 			self.draw_plot_vis()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def vistype_action(self):
 		vistype = self.vistype_menu.currentText()
@@ -1410,10 +1412,7 @@ class FuelcellUI(QTabWidget):
 	def drawlines_action_vis(self):
 		state = self.drawlines_chkbx_vis.isChecked()
 		self.vishandler.set_drawline(state)
-		if state:
-			ls = '-'
-		else:
-			ls = ''
+		ls = '-' if state else ''
 		ax = self.get_ax_vis()
 		lines = ax.get_lines()
 		for i, l in enumerate(lines):
@@ -1425,10 +1424,7 @@ class FuelcellUI(QTabWidget):
 	def drawscatter_action_vis(self):
 		state = self.drawscatter_chkbx_vis.isChecked()
 		self.vishandler.set_drawscatter(state)
-		if state:
-			ms = '.'
-		else:
-			ms = ''
+		ms = '.' if state else ''
 		ax = self.get_ax_vis()
 		lines = ax.get_lines()
 		for i, l in enumerate(lines):
@@ -1546,7 +1542,7 @@ class FuelcellUI(QTabWidget):
 				self.figcanvas_vis.draw()
 				self.line_dict_vis = {d.get_label():d for d in self.vishandler.get_plot_data()}
 				self.lineselector_menu_vis.clear()
-				for n in self.line_dict_vis.keys():
+				for n in self.line_dict_vis:
 					self.lineselector_menu_vis.addItem(n)
 				self.lineselector_menu_vis.setCurrentText(new_label)
 		except KeyError:
@@ -1636,7 +1632,7 @@ class FuelcellUI(QTabWidget):
 			fig.savefig(loc, dpi=dpi)
 			self.update_status('Image saved successfully')
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def draw_plot_vis(self):
 		fig = self.figcanvas_vis.figure
@@ -1651,7 +1647,7 @@ class FuelcellUI(QTabWidget):
 		# self.ymax_txtbx_vis.setText(f'{ax.get_ylim()[1]:.2f}')
 		self.line_dict_vis = {d.get_label():d for d in self.vishandler.get_plot_data()}
 		self.lineselector_menu_vis.clear()
-		for n in self.line_dict_vis.keys():
+		for n in self.line_dict_vis:
 			self.lineselector_menu_vis.addItem(n)
 		self.shwowleg_action_vis()
 		ax.tick_params(axis='both', direction='in')
@@ -1950,8 +1946,9 @@ class FuelcellUI(QTabWidget):
 
 	def choose_folder_tafel(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_tafel.setText(filepath)
 			self.file_txtbx_tafel.setText('')
 
@@ -1970,7 +1967,7 @@ class FuelcellUI(QTabWidget):
 			self.vishandler.set_datafolder(folder)
 			self.file_action_tafel()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_tafel(self):
 		file_str = self.file_txtbx_tafel.text()
@@ -1984,14 +1981,14 @@ class FuelcellUI(QTabWidget):
 			files = [os.path.join(folder, f) for f in files]
 			self.vishandler.set_datafiles(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def loaddata_action_tafel(self):
 		try:
 			self.vishandler.load_tafel()
 			self.draw_plot_tafel()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def xcol_action_tafel(self):
 		col = self.xcol_txtbx_tafel.text()
@@ -2031,7 +2028,7 @@ class FuelcellUI(QTabWidget):
 			self.tafel_rsq_val.setText(str(this_data.get_tafel_rsq()))
 			self.figcanvas_tafel.draw()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def maxcurr_action_tafel(self):
 		new_max = self.maxcurr_txtbx_tafel.text()
@@ -2057,7 +2054,7 @@ class FuelcellUI(QTabWidget):
 			self.tafel_rsq_val.setText(str(this_data.get_tafel_rsq()))
 			self.figcanvas_tafel.draw()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 	
 	def xlabel_action_tafel(self):
 		new_label = self.xlabel_txtbx_tafel.text()
@@ -2153,7 +2150,7 @@ class FuelcellUI(QTabWidget):
 			fig.savefig(loc, dpi=dpi)
 			self.update_status('Image saved successfully')
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def draw_plot_tafel(self):
 		try:
@@ -2162,7 +2159,7 @@ class FuelcellUI(QTabWidget):
 			ax = self.figcanvas_tafel.figure.subplots()
 			tafel_data = self.vishandler.get_tafel_data()
 			self.tafel_dict = {d.get_label():d for d in tafel_data}
-			for n in self.tafel_dict.keys():
+			for n in self.tafel_dict:
 				self.lineselector_menu_tafel.addItem(n)
 			this_data = tafel_data[0]
 			# name = self.lineselector_menu_tafel.currentText()
@@ -2175,7 +2172,7 @@ class FuelcellUI(QTabWidget):
 			self.tafel_rsq_val.setText(str(this_data.get_tafel_rsq()))
 			self.figcanvas_tafel.draw()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def get_ax_tafel(self):
 		fig = self.figcanvas_tafel.figure
@@ -2455,8 +2452,9 @@ class FuelcellUI(QTabWidget):
 
 	def choose_folder_bayes(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_bayes.setText(filepath)
 			self.file_txtbx_bayes.setText('')
 
@@ -2475,7 +2473,7 @@ class FuelcellUI(QTabWidget):
 			self.vishandler.set_datafolder(folder)
 			self.file_action_bayes()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_bayes(self):
 		file_str = self.file_txtbx_bayes.text()
@@ -2489,14 +2487,14 @@ class FuelcellUI(QTabWidget):
 			files = [os.path.join(folder, f) for f in files]
 			self.vishandler.set_datafiles(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def loaddata_action_bayes(self):
 		try:
 			self.vishandler.load_bayes()
 			self.draw_plot_bayes()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def xcol_action_bayes(self):
 		col = self.xcol_txtbx_bayes.text()
@@ -2615,7 +2613,7 @@ class FuelcellUI(QTabWidget):
 			fig_kde.savefig(loc_kde, dpi=dpi)
 			self.update_status('Image saved successfully')
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def draw_plot_bayes(self):
 		try:
@@ -2627,7 +2625,7 @@ class FuelcellUI(QTabWidget):
 			ax_kde = self.figcanvas_bayes_kde.figure.subplots()
 			bayes_data = self.vishandler.get_bayes_data()
 			self.bayes_dict = {d.get_label():d for d in bayes_data}
-			for n in self.bayes_dict.keys():
+			for n in self.bayes_dict:
 				self.lineselector_menu_bayes.addItem(n)
 			this_data = bayes_data[0]
 			### REPLACE THESE LINES ###
@@ -2638,7 +2636,7 @@ class FuelcellUI(QTabWidget):
 			self.figcanvas_bayes_kde.draw()
 
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def get_ax_bayes(self):
 		fig_cdf = self.figcanvas_bayes_cdf.figure
@@ -2902,8 +2900,9 @@ class FuelcellUI(QTabWidget):
 
 	def choose_folder_eis(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_eis.setText(filepath)
 			self.file_txtbx_eis.setText('')
 
@@ -2922,7 +2921,7 @@ class FuelcellUI(QTabWidget):
 			self.vishandler.set_datafolder(folder)
 			self.file_action_eis()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_eis(self):
 		file_str = self.file_txtbx_eis.text()
@@ -2936,14 +2935,14 @@ class FuelcellUI(QTabWidget):
 			files = [os.path.join(folder, f) for f in files]
 			self.vishandler.set_datafiles(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def loaddata_action_eis(self):
 		try:
 			self.vishandler.load_eis()
 			self.draw_plot_eis()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def xcol_action_eis(self):
 		col = self.xcol_txtbx_eis.text()
@@ -3052,7 +3051,7 @@ class FuelcellUI(QTabWidget):
 			fig.savefig(loc, dpi=dpi)
 			self.update_status('Image saved successfully')
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def draw_plot_eis(self):
 		try:
@@ -3061,7 +3060,7 @@ class FuelcellUI(QTabWidget):
 			ax = self.figcanvas_eis.figure.subplots()
 			eis_data = self.vishandler.get_eis_data()
 			self.eis_dict = {d.get_label():d for d in eis_data}
-			for n in self.eis_dict.keys():
+			for n in self.eis_dict:
 				self.lineselector_menu_eis.addItem(n)
 			this_data = eis_data[0]
 			self.hfrsemi_val.setText(str(this_data.get_hfr()))
@@ -3074,7 +3073,7 @@ class FuelcellUI(QTabWidget):
 			fc.visuals.plot_hfr(data=this_data, ax=ax)
 			self.figcanvas_eis.draw()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def get_ax_eis(self):
 		fig = self.figcanvas_eis.figure
@@ -3165,8 +3164,9 @@ class FuelcellUI(QTabWidget):
 	### datahub actions ###
 	def choose_folder_upload(self):
 		fd = QFileDialog()
-		filepath = fd.getExistingDirectory(self, 'Data Folder', FuelcellUI.homedir)
-		if filepath:
+		if filepath := fd.getExistingDirectory(
+			self, 'Data Folder', FuelcellUI.homedir
+		):
 			self.folder_txtbx_upload.setText(filepath)
 			self.file_txtbx_upload.setText('')
 
@@ -3185,7 +3185,7 @@ class FuelcellUI(QTabWidget):
 			self.uploader.set_basedir(folder)
 			self.file_action_upload()
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def file_action_upload(self):
 		file_str = self.file_txtbx_upload.text()
@@ -3198,7 +3198,7 @@ class FuelcellUI(QTabWidget):
 				files = file_str.split('; ')
 			self.uploader.set_files(files)
 		except Exception as e:
-			self.update_status('ERROR: ' + str(e))
+			self.update_status(f'ERROR: {str(e)}')
 
 	def upload_action(self):
 		message = self.uploader.upload()

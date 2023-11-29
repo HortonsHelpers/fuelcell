@@ -482,22 +482,20 @@ def plotter(ax, x, y, e, l, line, scatter, errs, err_kw, **plot_kw):
 		if 'capsize' not in err_kw:
 			err_kw['capsize'] = 3
 		if line and scatter:
-			actual_line, actual_caps, actual_bars = ax.errorbar(x, y, e, label=l, **err_kw, **plot_kw)
+			pass
 		elif line:
 			plot_kw.pop('marker')
-			actual_line, actual_caps, actual_bars = ax.errorbar(x, y, e, label=l, **err_kw, **plot_kw)
 		else:
 			plot_kw['ls'] = ''
-			actual_line, actual_caps, actual_bars = ax.errorbar(x, y, e, label=l, **err_kw, **plot_kw)
-	else :
+		actual_line, actual_caps, actual_bars = ax.errorbar(x, y, e, label=l, **err_kw, **plot_kw)
+	else:
 		if line and scatter:
-			actual_line = ax.plot(x, y, label=l, **plot_kw)
+			pass
 		elif line:
 			plot_kw.pop('marker')
-			actual_line = ax.plot(x, y, label=l, **plot_kw)
 		else:
 			plot_kw['ls'] = ''
-			actual_line = ax.plot(x, y, label=l, **plot_kw)
+		actual_line = ax.plot(x, y, label=l, **plot_kw)
 		actual_line = actual_line[0]
 	return actual_line, actual_caps, actual_bars
  
